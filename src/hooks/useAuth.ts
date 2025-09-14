@@ -44,10 +44,11 @@ export const useAuth = () => {
         if (mounted) {
           setUser(session?.user ?? null);
           if (session?.user) {
-            // Don't await admin check to prevent blocking
-            checkAdminStatus(session.user.id).catch(() => {
-              console.warn('Admin check failed, continuing without admin status');
-            });
+            // Only check admin status if user is authenticated and we want to
+            // This is optional and won't block loading
+            setTimeout(() => {
+              checkAdminStatus(session.user.id);
+            }, 1000); // Delay admin check to not block initial load
           }
           setLoading(false);
         }
@@ -69,7 +70,10 @@ export const useAuth = () => {
         if (mounted) {
           setUser(session?.user ?? null);
           if (session?.user) {
-            await checkAdminStatus(session.user.id);
+            // Delay admin check to not block auth state changes
+            setTimeout(() => {
+              checkAdminStatus(session.user.id);
+            }, 500);
           } else {
             setIsAdmin(false);
           }
@@ -86,26 +90,27 @@ export const useAuth = () => {
 
   const checkAdminStatus = async (userId: string) => {
     try {
-      // Add timeout to prevent hanging
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Admin check timeout')), 3000)
-      );
-      
-      const adminCheckPromise = supabase
+      // Check if admin_users table exists by trying a simple query
+      const { data, error } = await supabase
         .from('admin_users')
         .select('is_super_admin')
         .eq('user_id', userId)
-        .maybeSingle();
+        .limit(1)
+        .single();
       
-      const { data, error } = await Promise.race([adminCheckPromise, timeoutPromise]) as any;
-      
-      if (!error && data) {
-        setIsAdmin(data.is_super_admin || false);
-      } else {
-        setIsAdmin(false);
+      if (error) {
+        // If table doesn't exist or user is not admin, that's fine
+        if (error.code === 'PGRST116' || error.code === 'PGRST301') {
+          // Table doesn't exist or no rows found - not an admin
+          setIsAdmin(false);
+          return;
+        }
+        throw error;
       }
+      
+      setIsAdmin(data?.is_super_admin || false);
     } catch (error) {
-      console.warn('Admin status check failed, defaulting to false:', error);
+      // Silently fail - admin check is optional
       setIsAdmin(false);
     }
   };
