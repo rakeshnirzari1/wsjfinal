@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Prevent horizontal scrolling on mobile */
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+}
+
+/* Ensure all containers don't exceed viewport width */
+* {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Fix for long text that might cause horizontal scroll */
+.whitespace-nowrap {
+  @media (max-width: 768px) {
+    white-space: normal;
+    word-break: break-word;
+  }
+}

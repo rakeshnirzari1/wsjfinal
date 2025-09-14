@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="title" content="Western Sydney Jobs - Find Your Dream Job" id="meta-title" />
+    <meta name="description" content="Discover thousands of job opportunities in Western Sydney. Explore top employers across all industries and kickstart your career today!" id="meta-description" />
+    <meta property="og:title" content="Western Sydney Jobs - Find Your Dream Job" id="og-title" />
+    <meta property="og:description" content="Discover thousands of job opportunities in Western Sydney. Explore top employers across all industries and kickstart your career today!" id="og-description" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://westernsydneyjobs.com.au" id="og-url" />
+    <meta property="og:image" content="https://images.pexels.com/photos/1181676/pexels-photo-1181676.jpeg?auto=compress&cs=tinysrgb&w=1200&h=630" id="og-image" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Western Sydney Jobs - Find Your Dream Job" id="twitter-title" />
+    <meta name="twitter:description" content="Discover thousands of job opportunities in Western Sydney. Explore top employers across all industries and kickstart your career today!" id="twitter-description" />
+    <meta name="twitter:image" content="https://images.pexels.com/photos/1181676/pexels-photo-1181676.jpeg?auto=compress&cs=tinysrgb&w=1200&h=630" id="twitter-image" />
+    <title>Western Sydney Jobs - Find Your Dream Job</title>
+    
+    <!-- Add loading fallback -->
+    <style>
+      #loading-fallback {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #f9fafb;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+      }
+      
+      .loading-spinner {
+        width: 48px;
+        height: 48px;
+        border: 3px solid #e5e7eb;
+        border-top: 3px solid #2563eb;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root">
+      <!-- Loading fallback that shows before React loads -->
+      <div id="loading-fallback">
+        <div style="text-align: center;">
+          <div class="loading-spinner"></div>
+          <p style="margin-top: 16px; color: #6b7280; font-family: Arial, sans-serif;">Loading Western Sydney Jobs...</p>
+        </div>
+      </div>
+    </div>
+    
+    <script>
+      // Improved error handling
+      window.addEventListener('error', function(e) {
+        console.error('Page error:', e.error);
+        const fallback = document.getElementById('loading-fallback');
+        if (fallback) {
+          fallback.innerHTML = `
+            <div style="text-align: center; font-family: Arial, sans-serif;">
+              <h2 style="color: #dc2626;">Loading Error</h2>
+              <p style="color: #6b7280;">There was an error loading the page.</p>
+              <button onclick="window.location.reload()" style="
+                background: #2563eb; 
+                color: white; 
+                border: none; 
+                padding: 10px 20px; 
+                border-radius: 5px; 
+                cursor: pointer;
+                margin-top: 10px;
+              ">Refresh Page</button>
+            </div>
+          `;
+        }
+      });
+      
+      // Handle unhandled promise rejections
+      window.addEventListener('unhandledrejection', function(e) {
+        console.error('Unhandled promise rejection:', e.reason);
+      });
+    </script>
+    
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
