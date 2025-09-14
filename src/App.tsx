@@ -108,7 +108,7 @@ function AppContent({ onAppReady }: AppContentProps) {
           onAppReady();
         }
       }
-    }, 10000); // 10 second timeout
+    }, 5000); // 5 second timeout
 
     return () => clearTimeout(timeout);
   }, [appLoading, onAppReady]);

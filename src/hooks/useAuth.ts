@@ -7,22 +7,52 @@ export const useAuth = () => {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
 
+  // Quick check if Supabase is properly configured
+  const isSupabaseReady = () => {
+    try {
+      return supabase && supabase.auth;
+    } catch {
+      return false;
+    }
+  };
+
   useEffect(() => {
     let mounted = true;
 
-    // Get initial session
+    // If Supabase is not ready, skip auth entirely
+    if (!isSupabaseReady()) {
+      console.warn('Supabase not ready, skipping authentication');
+      if (mounted) {
+        setUser(null);
+        setIsAdmin(false);
+        setLoading(false);
+      }
+      return;
+    }
+
+    // Get initial session with timeout
     const getInitialSession = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        // Add timeout to prevent hanging
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Auth session timeout')), 5000)
+        );
+        
+        const sessionPromise = supabase.auth.getSession();
+        const { data: { session } } = await Promise.race([sessionPromise, timeoutPromise]) as any;
+        
         if (mounted) {
           setUser(session?.user ?? null);
           if (session?.user) {
-            await checkAdminStatus(session.user.id);
+            // Don't await admin check to prevent blocking
+            checkAdminStatus(session.user.id).catch(() => {
+              console.warn('Admin check failed, continuing without admin status');
+            });
           }
           setLoading(false);
         }
       } catch (error) {
-        console.error('Error getting initial session:', error);
+        console.warn('Error getting initial session, continuing without auth:', error);
         if (mounted) {
           setUser(null);
           setIsAdmin(false);
@@ -56,11 +86,18 @@ export const useAuth = () => {
 
   const checkAdminStatus = async (userId: string) => {
     try {
-      const { data, error } = await supabase
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Admin check timeout')), 3000)
+      );
+      
+      const adminCheckPromise = supabase
         .from('admin_users')
         .select('is_super_admin')
         .eq('user_id', userId)
         .maybeSingle();
+      
+      const { data, error } = await Promise.race([adminCheckPromise, timeoutPromise]) as any;
       
       if (!error && data) {
         setIsAdmin(data.is_super_admin || false);
@@ -68,7 +105,7 @@ export const useAuth = () => {
         setIsAdmin(false);
       }
     } catch (error) {
-      console.error('Error checking admin status:', error);
+      console.warn('Admin status check failed, defaulting to false:', error);
       setIsAdmin(false);
     }
   };
